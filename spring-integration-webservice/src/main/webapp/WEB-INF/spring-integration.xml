@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:int="http://www.springframework.org/schema/integration"
+       xmlns:jms="http://www.springframework.org/schema/integration/jms"
+       xmlns:int-http="http://www.springframework.org/schema/integration/http"
+       xmlns:task="http://www.springframework.org/schema/task"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/integration
+    http://www.springframework.org/schema/integration/spring-integration.xsd
+    http://www.springframework.org/schema/integration/http
+    http://www.springframework.org/schema/integration/http/spring-integration-http.xsd
+    http://www.springframework.org/schema/integration/jms
+    http://www.springframework.org/schema/integration/jms/spring-integration-jms.xsd
+    http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd">
+
+    <bean id="connectionFactory" class="org.apache.activemq.spring.ActiveMQConnectionFactory">
+        <property name="brokerURL" value="tcp://localhost:61616" />
+    </bean>
+
+
+    <!--<int:poller id="poller" default="true" fixed-delay="1000" />-->
+
+    <int:publish-subscribe-channel id="client-input-channel" task-executor="taskExecutor" />
+
+    <int:channel id="client-output-channel" />
+
+    <int-http:inbound-gateway
+            path="/ping"
+            mapped-request-headers="*"
+            supported-methods="POST"
+            request-channel="to-queue-channel"
+            request-payload-type="com.dat.example.spring.dto.request.PingRequest"
+            reply-channel="client-input-channel">
+        <int-http:request-mapping consumes="application/json" />
+    </int-http:inbound-gateway>
+
+
+    <bean id="myQueue" class="org.apache.activemq.command.ActiveMQQueue">
+        <constructor-arg value="test.queue" />
+    </bean>
+
+<!--    <bean id="myTopic" class="org.apache.activemq.command.ActiveMQTopic">
+        <constructor-arg value="topic.myTopic" />
+    </bean>-->
+
+
+    <!--<int:channel id="to-queue-channel">
+        &lt;!&ndash;<int:queue capacity="1" />&ndash;&gt;
+    </int:channel>-->
+
+    <task:executor id="taskExecutor" pool-size="10" queue-capacity="100"/>
+
+    <int:publish-subscribe-channel id="to-queue-channel" task-executor="taskExecutor">
+    </int:publish-subscribe-channel>
+    <!--<jms:channel id="to-queue-channel" queue="requestQueue">
+    </jms:channel>-->
+
+    <jms:outbound-channel-adapter id="jmsOutboundAdapter"
+                                  channel="to-queue-channel"
+                                  destination="myQueue" />
+
+
+    <jms:message-driven-channel-adapter id="messageDrivenAdapter"
+                                        channel="from-queue-channel"
+                                        destination="myQueue" task-executor="taskExecutor"/>
+
+    <!--<jms:outbound-channel-adapter
+            id="jmsout" channel="to-queue-channel" auto-startup="false"
+            connection-factory="connectionFactory" destination="requestQueue"/>-->
+    <int:publish-subscribe-channel id="from-queue-channel" task-executor="taskExecutor">
+        <!--<int:queue capacity="1" />-->
+    </int:publish-subscribe-channel>
+    <!--<jms:channel id="from-queue-channel" queue="requestQueue">
+    </jms:channel>-->
+
+<!--    <jms:inbound-channel-adapter
+        id="imsin" channel="to-queue-channel"
+        connection-factory="connectionFactory" destination="requestQueue" />-->
+
+<!--    <jms:message-driven-channel-adapter channel="to-queue-channel"
+                                        destination="requestQueue"
+                                        connection-factory="connectionFactory" />-->
+
+    <!--<jms:channel id="from-queue-channel" queue="requestQueue" />-->
+
+    <int:service-activator
+            ref="monitorActivator"
+            method="ping"
+            input-channel="to-queue-channel" auto-startup="true"/>
+
+    <int:service-activator
+        ref="monitorActivator"
+        method="getMessageFromQueue"
+        input-channel="from-queue-channel" />
+
+
+</beans>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.0.xsd"
+                   logicalFilePath="db.changelog.dbtenant-1.0.xml">
+    <changeSet author="chuong (generated)" id="1434534569915-1">
+        <createTable tableName="client_account">
+            <column name="terminal_id" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="username" type="VARCHAR(45)"/>
+            <column name="password" type="LONGTEXT"/>
+            <column defaultValueNumeric="1" name="account_non_expired" type="BIT(1)"/>
+            <column defaultValueNumeric="1" name="account_non_locked" type="BIT(1)"/>
+            <column defaultValueNumeric="1" name="credentials_non_expired" type="BIT(1)"/>
+            <column defaultValueNumeric="0" name="enabled" type="BIT(1)"/>
+            <column name="last_passwords" type="LONGTEXT"/>
+            <column name="attempt_password" type="TINYINT"/>
+            <column name="attempt_reset_password" type="TINYINT"/>
+            <column name="last_login_time" type="datetime"/>
+            <column name="last_password_updated" type="datetime"/>
+            <column name="created" type="datetime"/>
+            <column name="last_updated" type="datetime"/>
+            <column defaultValueNumeric="0" name="deleted" type="BIT(1)"/>
+            <column defaultValueNumeric="0" name="version_no" type="INT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="chuong (generated)" id="1434534569915-7">
+        <addPrimaryKey columnNames="terminal_id" constraintName="PRIMARY" tableName="client_account"/>
+    </changeSet>
+</databaseChangeLog>

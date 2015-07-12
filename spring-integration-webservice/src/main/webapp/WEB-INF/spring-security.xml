@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:security="http://www.springframework.org/schema/security" xmlns:beans="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/security 
+        http://www.springframework.org/schema/security/spring-security.xsd">
+
+    <!-- Configure Spring Security -->
+    <security:http auto-config="false" entry-point-ref="basicAuthenticationEntryPoint" create-session="ifRequired"   authentication-manager-ref="authenticationManager" use-expressions="true"
+            >
+        <!--<security:custom-security ref="tenantFilter" position="FIRST" />-->
+        <security:custom-filter ref="smartSeviceBasicAuthenticationFilter" position="BASIC_AUTH_FILTER"/>
+        <security:intercept-url pattern='/ping' access="permitAll()"  />
+        <security:intercept-url pattern='/**' access="isAuthenticated()"  />
+
+    </security:http>
+
+    <bean id="smartSeviceBasicAuthenticationFilter" class="ch.smartlink.smartservices.security.SmartServiceBasicAuthenticationFilter">
+        <constructor-arg ref="authenticationManager"></constructor-arg>
+        <constructor-arg ref="basicAuthenticationEntryPoint"></constructor-arg>
+    </bean>
+    <bean id="basicAuthenticationEntryPoint" class="org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint">
+        <property name="realmName" value="Smart Services"></property>
+    </bean>
+    <bean id="tenantFilter" class="ch.smartlink.smartservices.support.TenantFilter"></bean>
+
+    <bean id="passwordEncoder" class="ch.smartlink.smartservices.support.SmartServicePasswordEncoder"/>
+    <security:authentication-manager  id="authenticationManager">
+        <security:authentication-provider user-service-ref="userDetailsServiceImpl">
+            <security:password-encoder ref="passwordEncoder"/>
+
+        </security:authentication-provider>
+    </security:authentication-manager>
+</beans>

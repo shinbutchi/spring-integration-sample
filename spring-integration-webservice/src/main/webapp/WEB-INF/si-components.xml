@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:int="http://www.springframework.org/schema/integration"
+	   xmlns:int-http="http://www.springframework.org/schema/integration/http"
+	   xsi:schemaLocation="
+    http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/integration
+    http://www.springframework.org/schema/integration/spring-integration.xsd
+    http://www.springframework.org/schema/integration/http
+    http://www.springframework.org/schema/integration/http/spring-integration-http.xsd">
+    <int:channel id="client-output-channel" />
+    <int-http:inbound-gateway
+            path="/ping"
+            mapped-request-headers="*"
+            supported-methods="POST"
+            request-channel="ping-channel"
+            request-payload-type="com.dat.example.spring.dto.request.PingRequest"
+            reply-channel="client-output-channel">
+        <int-http:request-mapping consumes="application/json" />
+    </int-http:inbound-gateway>
+
+    <int:channel id="ping-channel" />
+
+c
+</beans>
